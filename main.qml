@@ -2,75 +2,92 @@ import QtQuick 2.12
 import QtQuick.Window 2.12
 
 Window {
+    property int columnCount: 10
+    property int rowCount: 10
+    property int newPixelHeight: 0
+    property int newPixelWidth: 0
+    property int maxPixelWidth: 100;
+    property int maxPixelHeight: 100;
+    property int minPixelWidth: 2;
+    property int minPixelHeight: 2;
+    property int pixelWidth: 20;
+    property int pixelHeight: 20;
+    property double zoomPercent: 0.5
+
     id:root
     visible: true
     width: 640
     height: 480
-    title: qsTr("Hello World")
+    title: qsTr("OledDesigner")
 
-    Flickable {
-         id: flickable
-         clip: true
-         anchors.fill: parent
+    Flickable
+    {
+        id: flickable
+        clip: true
+        contentWidth: columnCount * pixelWidth
+        contentHeight:  rowCount * pixelHeight
+        flickableDirection: Flickable.HorizontalAndVerticalFlick
+        anchors.fill: parent
 
-    Column {
+        Column {
+            id: matrix
+            //anchors.fill: parent;
+            //property int x_pos: index
+            Repeater
+            {
+                model: columnCount
+                Row
+                {
+                    property int y_pos: index
+                    id:row
+                    Repeater
+                    {
+                        id: repeatr
+                        model: rowCount
 
-      anchors.fill: parent;
-      Repeater {
-        model: 128//myGameBoard.columnCount()
-
-        Row {
-          property int y_pos: index
-id:row
-          Repeater {
-            id: repeatr
-            model: 128//myGameBoard.rowCount()
-
-            Rectangle {
-                id: cell
-              height: 10//root.height/128;
-              width: 10//root.width/128;
-              border.color: "black";
-
-              //color: mouseArea.containsMouse && mouseArea.pressed ? "orange" : "white";
-
-              MouseArea {
-                   id: mouseArea
-                   anchors.fill: parent
-                   hoverEnabled: true
-                   propagateComposedEvents: true
-                   acceptedButtons: Qt.LeftButton | Qt.RightButton
-
-                 property bool leftClick: mouseArea.pressedButtons == Qt.LeftButton
-
-                   onEntered:
-                   { //mouseArea.accepted = false
-                      // console.log("Entered");
-                       if (leftClick)
-                       {
-                           cell.color = "orange";
-                           console.log("Entered leftClick = true");
-                       }
-
-                       if (mouseArea.button === Qt.LeftButton)
-                       {
-                           cell.color = "orange";
-                           console.log("Entered left button");
-                       }
-                       else if (mouseArea.button & Qt.RightButton)
-                       {
-                           cell.color = "white"
-                           console.log("Entered right button");
-                       }
-
-                   }
-
-               }
-
+                        Rectangle {
+                            id: cell
+                            height: pixelHeight;
+                            width: pixelWidth;
+                            border.color: "black";
+                            Text
+                            {
+                                anchors.centerIn: parent
+                                text:  "," + y_pos;
+                            }
+                        }
+                    }
+                }
             }
-          } //Repeater
-        } //Row
-      } //Repeater
+        }
+        MouseArea
+        {
+            anchors.fill: parent
+            onWheel:
+            {
+                if (wheel.angleDelta.y > 0)
+                {
+                    newPixelHeight = pixelHeight + pixelHeight * zoomPercent;
+                    if (newPixelHeight > maxPixelHeight)
+                        newPixelHeight = maxPixelHeight;
+
+                    newPixelWidth = pixelWidth + pixelWidth * zoomPercent;
+                    if (newPixelWidth > maxPixelWidth)
+                        newPixelWidth = maxPixelWidth;
+                }
+                else
+                {
+                    newPixelHeight = pixelHeight - pixelHeight * zoomPercent;
+                    if (newPixelHeight < minPixelHeight)
+                        newPixelHeight = minPixelHeight;
+
+                    newPixelWidth = pixelWidth - pixelWidth * zoomPercent;
+                    if (newPixelWidth < minPixelWidth)
+                        newPixelWidth = minPixelWidth;
+                }
+                pixelHeight = newPixelHeight;
+                pixelWidth = newPixelWidth;
+            }
+        }
     }
-    }//Column
 }
