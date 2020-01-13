@@ -2,8 +2,8 @@ import QtQuick 2.12
 import QtQuick.Window 2.12
 
 Window {
-    property int columnCount: 10
-    property int rowCount: 10
+    property int columnCount: 128
+    property int rowCount: 128
     property int newPixelHeight: 0
     property int newPixelWidth: 0
     property int maxPixelWidth: 100;
@@ -29,42 +29,57 @@ Window {
         flickableDirection: Flickable.HorizontalAndVerticalFlick
         anchors.fill: parent
 
-        Column {
-            id: matrix
-            //anchors.fill: parent;
-            //property int x_pos: index
+        Column
+        {
+            id: column
+            //anchors.centerIn: parent
             Repeater
             {
                 model: columnCount
                 Row
                 {
-                    property int y_pos: index
                     id:row
+                    property int y_pos: row.Positioner.index
+
                     Repeater
                     {
                         id: repeatr
                         model: rowCount
-
-                        Rectangle {
+                        // Oled display pixel
+                        Rectangle
+                        {
                             id: cell
                             height: pixelHeight;
                             width: pixelWidth;
                             border.color: "black";
+                            border.width: (pixelWidth > minPixelWidth) ? 1: 0
                             Text
                             {
                                 anchors.centerIn: parent
-                                text:  "," + y_pos;
+                                //text:  cell.Positioner.index + "," + y_pos;
+                            }
+
+                            MouseArea
+                            {
+                                anchors.fill: parent
+                                onClicked:
+                                {
+                                    color = "orange";
+                                }
                             }
                         }
                     }
                 }
             }
         }
+
         MouseArea
         {
             anchors.fill: parent
+            propagateComposedEvents: true
             onWheel:
             {
+                // Zoom in
                 if (wheel.angleDelta.y > 0)
                 {
                     newPixelHeight = pixelHeight + pixelHeight * zoomPercent;
@@ -75,6 +90,7 @@ Window {
                     if (newPixelWidth > maxPixelWidth)
                         newPixelWidth = maxPixelWidth;
                 }
+                // Zoom out
                 else
                 {
                     newPixelHeight = pixelHeight - pixelHeight * zoomPercent;
@@ -85,6 +101,7 @@ Window {
                     if (newPixelWidth < minPixelWidth)
                         newPixelWidth = minPixelWidth;
                 }
+                //
                 pixelHeight = newPixelHeight;
                 pixelWidth = newPixelWidth;
             }
